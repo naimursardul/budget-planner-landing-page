@@ -2,7 +2,6 @@ import AnnouncementBar from "@/components/AnnouncementBar";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import TrustStrip from "@/components/TrustStrip";
-import ProductOverview from "@/components/ProductOverview";
 import ProductGallery from "@/components/ProductGallery";
 import HowItWorks from "@/components/HowItWorks";
 import Benefits from "@/components/Benefits";
