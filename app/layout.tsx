@@ -15,7 +15,9 @@ const inter = Inter({
   display: "swap",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+// Trimmed check — some hosts set NEXT_PUBLIC_SITE_URL to an empty string,
+// which `??` doesn't catch and `new URL("")` would throw on.
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000";
 const brandName = process.env.NEXT_PUBLIC_BRAND_NAME ?? "Budgetly";
 
 const title = "Budget Planner for Google Sheets | Simple Monthly Budget Template";

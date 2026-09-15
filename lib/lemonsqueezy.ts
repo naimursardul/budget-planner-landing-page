@@ -41,7 +41,7 @@ export async function createCheckout(plan: PlanId): Promise<string> {
   const apiKey = env("LEMON_SQUEEZY_API_KEY");
   const storeId = env("LEMON_SQUEEZY_STORE_ID");
   const variantId = variantForPlan(plan);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000";
 
   if (!apiKey || !storeId || !variantId) {
     throw new Error("Lemon Squeezy is not configured");

@@ -13,7 +13,7 @@ import Footer from "@/components/Footer";
 import MobileStickyCta from "@/components/MobileStickyCta";
 import { getPrice } from "@/data/product";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000";
 
 const jsonLd = {
   "@context": "https://schema.org",
