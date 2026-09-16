@@ -6,7 +6,10 @@ import Icon from "./Icons";
 
 export default function Pricing() {
   return (
-    <section id="pricing" className="scroll-mt-20 border-y border-line bg-sand py-20 sm:py-28">
+    <section
+      id="pricing"
+      className="scroll-mt-20 border-y border-line bg-sand py-16 sm:py-20"
+    >
       <div className="container-page">
         <SectionHeading
           eyebrow="Pricing"
@@ -32,7 +35,10 @@ export default function Pricing() {
 
             <ul className="mt-8 flex-1 space-y-2.5 border-t border-line pt-6">
               {PRICING_PLAN.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-2.5 text-sm text-ink-soft">
+                <li
+                  key={feature}
+                  className="flex items-start gap-2.5 text-sm text-ink-soft"
+                >
                   <Icon name="check" className="mt-0.5 size-4 text-rose" />
                   {feature}
                 </li>
@@ -46,8 +52,8 @@ export default function Pricing() {
         </Reveal>
 
         <p className="mt-8 text-center text-xs text-muted">
-          Secure checkout via Lemon Squeezy • Instant digital download • PDF instructions
-          included
+          Secure checkout via Lemon Squeezy • Instant digital download • PDF
+          instructions included
         </p>
       </div>
     </section>

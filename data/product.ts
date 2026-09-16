@@ -212,7 +212,7 @@ export const BENEFITS = [
  * Placeholder price used only when NEXT_PUBLIC_PRICE_LIFETIME is not set.
  * Replace via the environment variable (or here) before going live.
  */
-const PRICE_FALLBACK = "$29";
+const PRICE_FALLBACK = "$10";
 
 export function getPrice(): string {
   const env = process.env.NEXT_PUBLIC_PRICE_LIFETIME;
