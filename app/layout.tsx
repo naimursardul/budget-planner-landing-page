@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Inter } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -17,10 +18,12 @@ const inter = Inter({
 
 // Trimmed check — some hosts set NEXT_PUBLIC_SITE_URL to an empty string,
 // which `??` doesn't catch and `new URL("")` would throw on.
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000";
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000";
 const brandName = process.env.NEXT_PUBLIC_BRAND_NAME ?? "Budgetly";
 
-const title = "Budget Planner for Google Sheets | Simple Monthly Budget Template";
+const title =
+  "Budget Planner for Google Sheets | Simple Monthly Budget Template";
 const description =
   "Take control of your finances with a beautifully organized Google Sheets budget planner featuring monthly dashboards, expense tracking, bill tracking, priority planning and automatic calculations.";
 
@@ -56,7 +59,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${cormorant.variable} ${inter.variable}`}>
-      <body>{children}</body>
+      <body>
+        <Analytics />
+        <main>{children}</main>
+      </body>
     </html>
   );
 }
