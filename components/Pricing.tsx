@@ -6,10 +6,7 @@ import Icon from "./Icons";
 
 export default function Pricing() {
   return (
-    <section
-      id="pricing"
-      className="scroll-mt-20 border-y border-line bg-sand py-16 sm:py-20"
-    >
+    <section className="scroll-mt-20 border-y border-line bg-sand py-8 sm:py-12">
       <div className="container-page">
         <SectionHeading
           eyebrow="Pricing"
@@ -18,7 +15,10 @@ export default function Pricing() {
         />
 
         <Reveal className="mx-auto mt-14 max-w-md">
-          <div className="relative flex flex-col rounded-2xl border border-rose bg-white p-7 shadow-lifted sm:p-9">
+          <div
+            id="pricing"
+            className="relative flex flex-col rounded-2xl border border-rose bg-white p-7 shadow-lifted sm:p-9"
+          >
             <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-rose px-4 py-1 text-[11px] font-bold tracking-[0.14em] text-white uppercase">
               Lifetime
             </span>

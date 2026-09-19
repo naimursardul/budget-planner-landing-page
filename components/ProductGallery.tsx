@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GALLERY } from "@/data/product";
-import { Mockup } from "./mockups";
 import Icon from "./Icons";
 import SectionHeading from "./SectionHeading";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 export default function ProductGallery() {
   const [selected, setSelected] = useState(0);
@@ -23,7 +23,9 @@ export default function ProductGallery() {
       if (event.key === "ArrowRight")
         setLightbox((i) => (i === null ? i : (i + 1) % GALLERY.length));
       if (event.key === "ArrowLeft")
-        setLightbox((i) => (i === null ? i : (i - 1 + GALLERY.length) % GALLERY.length));
+        setLightbox((i) =>
+          i === null ? i : (i - 1 + GALLERY.length) % GALLERY.length,
+        );
     };
 
     document.addEventListener("keydown", onKey);
@@ -37,7 +39,7 @@ export default function ProductGallery() {
   }, [lightbox, closeLightbox]);
 
   return (
-    <section id="features" className="scroll-mt-20 bg-cream py-20 sm:py-28">
+    <section id="features" className="scroll-mt-20 bg-cream py-12 sm:py-16">
       <div className="container-page">
         <SectionHeading
           eyebrow="Features"
@@ -54,8 +56,19 @@ export default function ProductGallery() {
               onClick={() => openLightbox(i)}
               className="card w-[85%] shrink-0 snap-center p-3 text-left"
             >
-              <span className="block aspect-[16/10] overflow-hidden rounded-lg">
-                <Mockup kind={item.mockup} />
+              <span className="block aspect-16/10 overflow-hidden rounded-lg">
+                {item.img && (
+                  <div className="relative h-full w-full">
+                    <Image
+                      quality={100}
+                      src={item.img}
+                      alt={item.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                  </div>
+                )}
               </span>
               <span className="block px-1 pt-3 pb-1">
                 <span className="block font-serif text-lg font-medium text-ink">
@@ -81,8 +94,19 @@ export default function ProductGallery() {
             className="card group p-4 text-left transition-shadow hover:shadow-lifted"
             aria-label={`Enlarge ${GALLERY[selected].title} view`}
           >
-            <span className="block aspect-[16/10] overflow-hidden rounded-lg">
-              <Mockup kind={GALLERY[selected].mockup} />
+            <span className="block aspect-16/10 overflow-hidden rounded-lg">
+              {GALLERY[selected].img && (
+                <div className="relative h-full w-full">
+                  <Image
+                    quality={100}
+                    src={GALLERY[selected].img}
+                    alt={GALLERY[selected].title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                </div>
+              )}
             </span>
             <span className="flex items-start justify-between gap-4 px-1 pt-4 pb-1">
               <span className="min-w-0">
@@ -98,7 +122,10 @@ export default function ProductGallery() {
                       key={bullet}
                       className="flex items-start gap-2 text-sm text-ink-soft"
                     >
-                      <Icon name="check" className="mt-0.5 size-3.5 text-rose" />
+                      <Icon
+                        name="check"
+                        className="mt-0.5 size-3.5 text-rose"
+                      />
                       {bullet}
                     </span>
                   ))}
@@ -111,7 +138,11 @@ export default function ProductGallery() {
             </span>
           </button>
 
-          <div className="flex flex-col gap-3" role="tablist" aria-label="Planner features">
+          <div
+            className="flex flex-col gap-3"
+            role="tablist"
+            aria-label="Planner features"
+          >
             {GALLERY.map((item, i) => (
               <button
                 key={item.title}
@@ -123,12 +154,23 @@ export default function ProductGallery() {
                   "flex items-center gap-3 rounded-xl border p-2.5 text-left transition-all",
                   i === selected
                     ? "border-rose bg-blush-50/60 shadow-soft"
-                    : "border-line bg-white hover:border-rose/50"
+                    : "border-line bg-white hover:border-rose/50",
                 )}
               >
                 <span className="block w-20 shrink-0 overflow-hidden rounded-md border border-line">
-                  <span className="block aspect-[16/10]">
-                    <Mockup kind={item.mockup} />
+                  <span className="block aspect-16/10">
+                    {item.img && (
+                      <div className="relative h-full w-full">
+                        <Image
+                          quality={100}
+                          src={item.img}
+                          alt={item.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                        />
+                      </div>
+                    )}
                   </span>
                 </span>
                 <span className="min-w-0">
@@ -148,7 +190,7 @@ export default function ProductGallery() {
       {/* lightbox */}
       {lightbox !== null && (
         <div
-          className="fixed inset-0 z-[70] flex items-center justify-center bg-ink/70 p-4 backdrop-blur-sm sm:p-8"
+          className="fixed inset-0 z-70 flex items-center justify-center bg-ink/70 p-4 backdrop-blur-sm sm:p-8"
           role="dialog"
           aria-modal="true"
           aria-label={`${GALLERY[lightbox].title} — enlarged view`}
@@ -159,22 +201,38 @@ export default function ProductGallery() {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="card p-3 sm:p-4">
-              <div className="aspect-[16/10] overflow-hidden rounded-lg">
-                <Mockup kind={GALLERY[lightbox].mockup} />
+              <div className="aspect-16/10 overflow-hidden rounded-lg">
+                {GALLERY[lightbox].img && (
+                  <div className="relative h-full w-full">
+                    <Image
+                      quality={100}
+                      src={GALLERY[lightbox].img}
+                      alt={GALLERY[lightbox].title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                  </div>
+                )}
               </div>
               <div className="flex items-start justify-between gap-4 px-1 pt-4 pb-1">
                 <div className="min-w-0">
                   <p className="font-serif text-xl font-medium text-ink">
                     {GALLERY[lightbox].title}
                   </p>
-                  <p className="mt-0.5 text-sm text-muted">{GALLERY[lightbox].text}</p>
+                  <p className="mt-0.5 text-sm text-muted">
+                    {GALLERY[lightbox].text}
+                  </p>
                   <ul className="mt-3 grid gap-1.5 sm:grid-cols-2">
                     {GALLERY[lightbox].bullets.map((bullet) => (
                       <li
                         key={bullet}
                         className="flex items-start gap-2 text-sm text-ink-soft"
                       >
-                        <Icon name="check" className="mt-0.5 size-3.5 text-rose" />
+                        <Icon
+                          name="check"
+                          className="mt-0.5 size-3.5 text-rose"
+                        />
                         {bullet}
                       </li>
                     ))}
@@ -186,7 +244,11 @@ export default function ProductGallery() {
                     aria-label="Previous view"
                     className="flex size-10 items-center justify-center rounded-full border border-line bg-white text-ink hover:border-rose"
                     onClick={() =>
-                      setLightbox((i) => (i === null ? i : (i - 1 + GALLERY.length) % GALLERY.length))
+                      setLightbox((i) =>
+                        i === null
+                          ? i
+                          : (i - 1 + GALLERY.length) % GALLERY.length,
+                      )
                     }
                   >
                     <Icon name="chevron-left" className="size-4" />
@@ -195,7 +257,11 @@ export default function ProductGallery() {
                     type="button"
                     aria-label="Next view"
                     className="flex size-10 items-center justify-center rounded-full border border-line bg-white text-ink hover:border-rose"
-                    onClick={() => setLightbox((i) => (i === null ? i : (i + 1) % GALLERY.length))}
+                    onClick={() =>
+                      setLightbox((i) =>
+                        i === null ? i : (i + 1) % GALLERY.length,
+                      )
+                    }
                   >
                     <Icon name="chevron-right" className="size-4" />
                   </button>

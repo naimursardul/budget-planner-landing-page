@@ -11,30 +11,28 @@ export type Testimonial = {
 export const TESTIMONIALS: Testimonial[] = [
   {
     quote:
-      "Finally, a budget spreadsheet that doesn't feel overwhelming. Everything is where I expect it to be.",
-    name: "Sarah M.",
-    role: "Personal budgeting",
+      "I really love your design style. It's clean, elegant, and exactly the kind of aesthetic I enjoy.",
+    name: "Cynthia",
+    role: "",
+    rating: 5,
+  },
+  {
+    quote: "Love it, easy to use!!",
+    name: "Pamela",
+    role: "",
     rating: 5,
   },
   {
     quote:
-      "Everything is already organized. I just customize it and start tracking. It saved me a whole weekend of formula wrangling.",
-    name: "Emily R.",
-    role: "Monthly planner",
+      "Very nice template, easy to use, good instructions and nice colours.",
+    name: "MnM",
+    role: "",
     rating: 5,
   },
   {
-    quote:
-      "The bill calendar alone was worth it. I stopped missing due dates in the first month.",
-    name: "Jessica T.",
-    role: "Household budgeting",
-    rating: 5,
-  },
-  {
-    quote:
-      "It looks beautiful and it actually works. The monthly dashboards make me want to keep up with it.",
-    name: "Amanda K.",
-    role: "First-time budgeter",
+    quote: "Just what I needed. Thank you",
+    name: "Ella",
+    role: "",
     rating: 5,
   },
 ];

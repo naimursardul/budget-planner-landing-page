@@ -1,8 +1,8 @@
 import { HERO } from "@/data/product";
 import LaptopFrame from "./mockups/LaptopFrame";
-import DashboardMockup from "./mockups/DashboardMockup";
 import Icon from "./Icons";
 import Reveal from "./Reveal";
+import Image from "next/image";
 
 export default function Hero() {
   return (
@@ -20,7 +20,16 @@ export default function Hero() {
       <div className="container-page relative grid items-center gap-14 py-12 sm:py-16 lg:grid-cols-2 lg:gap-12 lg:py-20">
         <Reveal className="order-1 lg:order-1">
           <LaptopFrame>
-            <DashboardMockup />
+            <div className="relative h-full w-full">
+              <Image
+                quality={100}
+                src={"/asset/dashboard.png"}
+                alt={"Monthly Dashboard"}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            </div>
           </LaptopFrame>
         </Reveal>
 

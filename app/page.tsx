@@ -1,7 +1,6 @@
 import AnnouncementBar from "@/components/AnnouncementBar";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import TrustStrip from "@/components/TrustStrip";
 import ProductGallery from "@/components/ProductGallery";
 import HowItWorks from "@/components/HowItWorks";
 import Benefits from "@/components/Benefits";
@@ -13,7 +12,8 @@ import Footer from "@/components/Footer";
 import MobileStickyCta from "@/components/MobileStickyCta";
 import { getPrice } from "@/data/product";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000";
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -47,8 +47,6 @@ export default function Page() {
       <Header />
       <main>
         <Hero />
-        <TrustStrip />
-        {/* <ProductOverview /> */}
         <ProductGallery />
         <HowItWorks />
         <Benefits />

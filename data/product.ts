@@ -101,22 +101,11 @@ export type GalleryItem = {
   title: string;
   text: string;
   bullets: string[];
-  mockup: MockupKind;
+  mockup?: MockupKind;
+  img?: string;
 };
 
 export const GALLERY: GalleryItem[] = [
-  {
-    title: "Monthly Dashboard",
-    text: "Budget vs. spent, earnings overview and spending breakdown for every month.",
-    bullets: [
-      "Budget vs. spent for every category",
-      "Earnings overview and income totals",
-      "Spending breakdown by category",
-      "Expenses, bills and debt in one view",
-      "Cash flow summary for the month",
-    ],
-    mockup: "dashboard",
-  },
   {
     title: "Transaction Log",
     text: "A single, simple log that feeds every calculation in the planner.",
@@ -126,7 +115,7 @@ export const GALLERY: GalleryItem[] = [
       "Amounts feed every dashboard automatically",
       "One log for the whole year",
     ],
-    mockup: "transactions",
+    img: "/asset/log.png",
   },
   {
     title: "Priority Tracker",
@@ -137,7 +126,7 @@ export const GALLERY: GalleryItem[] = [
       "See where your money is really going",
       "Make intentional spending decisions",
     ],
-    mockup: "priority",
+    img: "/asset/priority.png",
   },
   {
     title: "Bill Calendar",
@@ -148,7 +137,7 @@ export const GALLERY: GalleryItem[] = [
       "Notes for each bill",
       "Check off completed items",
     ],
-    mockup: "calendar",
+    img: "/asset/calendar.png",
   },
   {
     title: "Setup Page",
@@ -159,7 +148,19 @@ export const GALLERY: GalleryItem[] = [
       "Editable structure throughout",
       "A personalized budgeting system",
     ],
-    mockup: "setup",
+    img: "/asset/setup.png",
+  },
+  {
+    title: "Monthly Dashboard",
+    text: "Budget vs. spent, earnings overview and spending breakdown for every month.",
+    bullets: [
+      "Budget vs. spent for every category",
+      "Earnings overview and income totals",
+      "Spending breakdown by category",
+      "Expenses, bills and debt in one view",
+      "Cash flow summary for the month",
+    ],
+    img: "/asset/dashboard.png",
   },
 ];
 

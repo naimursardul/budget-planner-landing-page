@@ -4,7 +4,10 @@ import Reveal from "./Reveal";
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="scroll-mt-20 border-y border-line bg-sand py-20 sm:py-28">
+    <section
+      id="how-it-works"
+      className="scroll-mt-20 border-y border-line bg-sand py-12 sm:py-16"
+    >
       <div className="container-page">
         <SectionHeading
           eyebrow="How It Works"
@@ -30,7 +33,9 @@ export default function HowItWorks() {
                 <h3 className="mt-5 text-sm font-semibold tracking-[0.12em] text-ink uppercase">
                   {step.title}
                 </h3>
-                <p className="mt-2.5 text-sm leading-relaxed text-muted">{step.text}</p>
+                <p className="mt-2.5 text-sm leading-relaxed text-muted">
+                  {step.text}
+                </p>
               </Reveal>
             </li>
           ))}
