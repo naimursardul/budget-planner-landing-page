@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getPrice } from "@/data/product";
+import { getPrice, PRICING_PLAN } from "@/data/product";
 import { cn } from "@/lib/utils";
+import CheckoutButton from "./CheckoutButton";
 
 /**
  * Mobile-only sticky bottom CTA. Slides in once the visitor has scrolled
@@ -35,7 +36,7 @@ export default function MobileStickyCta() {
 
     const observer = new IntersectionObserver(
       ([entry]) => setPricingVisible(entry.isIntersecting),
-      { threshold: 0.2 }
+      { threshold: 0.2 },
     );
     observer.observe(pricing);
     return () => observer.disconnect();
@@ -48,7 +49,7 @@ export default function MobileStickyCta() {
       aria-hidden={!visible}
       className={cn(
         "fixed inset-x-0 bottom-0 z-40 border-t border-line bg-cream/90 backdrop-blur-md transition-transform duration-300 md:hidden",
-        visible ? "translate-y-0" : "pointer-events-none translate-y-full"
+        visible ? "translate-y-0" : "pointer-events-none translate-y-full",
       )}
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
@@ -64,9 +65,7 @@ export default function MobileStickyCta() {
             Instant download • Lifetime access
           </span>
         </p>
-        <a href="#pricing" className="btn btn-primary btn-sm shrink-0">
-          Get the Planner
-        </a>
+        <CheckoutButton plan={PRICING_PLAN.id} label={"Buy Now"} />
       </div>
     </div>
   );

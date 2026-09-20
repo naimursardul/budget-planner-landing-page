@@ -91,7 +91,7 @@ export default function CheckoutButton({
         className={cn(
           "btn w-full",
           variant === "primary" ? "btn-primary" : "btn-secondary",
-          loading && "cursor-wait opacity-70"
+          loading && "cursor-wait opacity-70",
         )}
       >
         {loading ? "Opening checkout…" : label}
