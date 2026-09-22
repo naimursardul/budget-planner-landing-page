@@ -17,8 +17,8 @@ function env(name: string): string | null {
 export function isLemonSqueezyConfigured(): boolean {
   return Boolean(
     env("LEMON_SQUEEZY_API_KEY") &&
-      env("LEMON_SQUEEZY_STORE_ID") &&
-      env("LEMON_SQUEEZY_VARIANT_LIFETIME")
+    env("LEMON_SQUEEZY_STORE_ID") &&
+    env("LEMON_SQUEEZY_VARIANT_LIFETIME"),
   );
 }
 
@@ -41,7 +41,8 @@ export async function createCheckout(plan: PlanId): Promise<string> {
   const apiKey = env("LEMON_SQUEEZY_API_KEY");
   const storeId = env("LEMON_SQUEEZY_STORE_ID");
   const variantId = variantForPlan(plan);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000";
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000";
 
   if (!apiKey || !storeId || !variantId) {
     throw new Error("Lemon Squeezy is not configured");
@@ -79,7 +80,9 @@ export async function createCheckout(plan: PlanId): Promise<string> {
 
   if (!response.ok) {
     const detail = await response.text();
-    throw new Error(`Lemon Squeezy checkout failed (${response.status}): ${detail}`);
+    throw new Error(
+      `Lemon Squeezy checkout failed (${response.status}): ${detail}`,
+    );
   }
 
   const json = await response.json();
@@ -94,12 +97,21 @@ export async function createCheckout(plan: PlanId): Promise<string> {
  * Verify a webhook request's X-Signature header (HMAC-SHA256 of the raw body
  * with the webhook secret, hex-encoded) using a timing-safe comparison.
  */
-export function verifyWebhookSignature(rawBody: string, signature: string | null): boolean {
+export function verifyWebhookSignature(
+  rawBody: string,
+  signature: string | null,
+): boolean {
   const secret = env("LEMON_SQUEEZY_WEBHOOK_SECRET");
   if (!secret || !signature) return false;
 
-  const digest = crypto.createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
+  const digest = crypto
+    .createHmac("sha256", secret)
+    .update(rawBody, "utf8")
+    .digest("hex");
   const expected = Buffer.from(digest, "utf8");
   const received = Buffer.from(signature, "utf8");
-  return expected.length === received.length && crypto.timingSafeEqual(expected, received);
+  return (
+    expected.length === received.length &&
+    crypto.timingSafeEqual(expected, received)
+  );
 }
