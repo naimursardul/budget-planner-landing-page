@@ -1,6 +1,14 @@
 import "server-only";
-import { MongoClient } from "mongodb";
+import dns from "node:dns/promises";
+import mongoose, { Schema } from "mongoose";
 
+/**
+ * mongodb+srv:// URIs resolve via Node's dns.resolveSrv(), which on some
+ * Windows networks hits a resolver that refuses SRV queries (ECONNREFUSED).
+ * Pin explicit public DNS servers for resolve* calls. Harmless elsewhere.
+ */
+dns.setDefaultResultOrder("ipv4first");
+dns.setServers(["1.1.1.1", "8.8.8.8"]);
 /**
  * Optional MongoDB persistence. The landing page renders and responds fine
  * without MONGODB_URI — records are simply logged server-side instead.
@@ -8,17 +16,28 @@ import { MongoClient } from "mongodb";
 
 const URI = process.env.MONGODB_URI;
 
-const globalForMongo = globalThis as unknown as {
-  __mongoClientPromise?: Promise<MongoClient>;
+const globalForMongoose = globalThis as unknown as {
+  __mongooseConnect?: Promise<typeof mongoose>;
 };
 
-function getClient(): Promise<MongoClient> | null {
+function connect(): Promise<typeof mongoose> | null {
   if (!URI) return null;
-  if (!globalForMongo.__mongoClientPromise) {
-    const client = new MongoClient(URI);
-    globalForMongo.__mongoClientPromise = client.connect();
+  if (!globalForMongoose.__mongooseConnect) {
+    globalForMongoose.__mongooseConnect = mongoose
+      .connect(URI)
+      .then(async (m) => {
+        // Make sure unique indexes exist before we rely on them.
+        await Promise.all([Purchase.init(), Subscriber.init()]);
+        return m;
+      })
+      .catch((error) => {
+        // Drop the cached rejection so the next request retries the connect.
+        console.log("error", error);
+        globalForMongoose.__mongooseConnect = undefined;
+        throw error;
+      });
   }
-  return globalForMongo.__mongoClientPromise;
+  return globalForMongoose.__mongooseConnect;
 }
 
 export type PurchaseRecord = {
@@ -28,42 +47,79 @@ export type PurchaseRecord = {
   variantId: string;
   plan: string;
   status: string;
+  /** Order amounts as reported by Lemon Squeezy (integer cents). */
+  total?: number;
+  discountTotal?: number;
+  currency?: string;
   createdAt: Date;
 };
 
+const purchaseSchema = new Schema<PurchaseRecord>(
+  {
+    orderId: { type: String, required: true, unique: true },
+    customerId: { type: String, required: true },
+    email: { type: String, required: true },
+    variantId: { type: String, required: true },
+    plan: { type: String, required: true },
+    status: { type: String, required: true },
+    total: Number,
+    discountTotal: Number,
+    currency: String,
+    createdAt: { type: Date, required: true },
+  },
+  { versionKey: false },
+);
+
+const subscriberSchema = new Schema<{ email: string; createdAt: Date }>(
+  {
+    email: { type: String, required: true, unique: true },
+    createdAt: { type: Date, required: true },
+  },
+  { versionKey: false },
+);
+
+const Purchase =
+  mongoose.models.Purchase ??
+  mongoose.model<PurchaseRecord>("Purchase", purchaseSchema, "purchases");
+
+const Subscriber =
+  mongoose.models.Subscriber ??
+  mongoose.model<{ email: string; createdAt: Date }>(
+    "Subscriber",
+    subscriberSchema,
+    "subscribers",
+  );
+
 /** Persist an order record (upsert by orderId). No card data, ever. */
-export async function savePurchase(record: PurchaseRecord): Promise<"saved" | "skipped"> {
-  const client = await getClient();
-  if (!client) {
+export async function savePurchase(
+  record: PurchaseRecord,
+): Promise<"saved" | "skipped"> {
+  if (!(await connect())) {
     console.info(
-      `[mongo] MONGODB_URI not set — purchase not persisted (order ${record.orderId}, plan ${record.plan})`
+      `[mongo] MONGODB_URI not set — purchase not persisted (order ${record.orderId}, plan ${record.plan})`,
     );
     return "skipped";
   }
-  await client
-    .db()
-    .collection<PurchaseRecord>("purchases")
-    .updateOne({ orderId: record.orderId }, { $set: record }, { upsert: true });
+  await Purchase.updateOne(
+    { orderId: record.orderId },
+    { $set: record },
+    { upsert: true },
+  );
   return "saved";
 }
 
 /** Store a newsletter subscriber; rejects duplicates by email. */
 export async function saveSubscriber(
-  email: string
+  email: string,
 ): Promise<"saved" | "duplicate" | "skipped"> {
-  const client = await getClient();
-  if (!client) {
-    console.info(`[mongo] MONGODB_URI not set — subscriber not persisted (${email})`);
+  if (!(await connect())) {
+    console.info(
+      `[mongo] MONGODB_URI not set — subscriber not persisted (${email})`,
+    );
     return "skipped";
   }
-  const exists = await client
-    .db()
-    .collection<{ email: string }>("subscribers")
-    .findOne({ email });
+  const exists = await Subscriber.findOne({ email });
   if (exists) return "duplicate";
-  await client
-    .db()
-    .collection<{ email: string; createdAt: Date }>("subscribers")
-    .insertOne({ email, createdAt: new Date() });
+  await Subscriber.create({ email, createdAt: new Date() });
   return "saved";
 }

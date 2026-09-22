@@ -17,7 +17,10 @@ export async function POST(request: Request) {
   }
 
   let payload: {
-    meta?: { event_name?: string };
+    meta?: {
+      event_name?: string;
+      custom_data?: { plan?: string };
+    };
     data?: {
       id?: string;
       attributes?: {
@@ -26,6 +29,9 @@ export async function POST(request: Request) {
         user_email?: string;
         status?: string;
         created_at?: string;
+        currency?: string;
+        total?: number;
+        discount_total?: number;
         first_order_item?: { variant_id?: number };
       };
     };
@@ -39,8 +45,13 @@ export async function POST(request: Request) {
   const eventName = payload.meta?.event_name;
   if (eventName === "order_created" || eventName === "order_refunded") {
     const attributes = payload.data?.attributes ?? {};
+    const customData = payload.meta?.custom_data ?? {};
     const variantId = String(attributes.first_order_item?.variant_id ?? "");
-    const plan = planForVariant(variantId);
+    // Prefer the variant mapping; fall back to the plan we stamped into the
+    // checkout's custom data.
+    const plan =
+      planForVariant(variantId) ??
+      (customData.plan === "lifetime" ? "lifetime" : null);
 
     const record: PurchaseRecord = {
       orderId: String(attributes.order_id ?? payload.data?.id ?? ""),
@@ -49,6 +60,11 @@ export async function POST(request: Request) {
       variantId,
       plan: plan ?? "unknown",
       status: String(attributes.status ?? eventName),
+      ...(typeof attributes.total === "number" ? { total: attributes.total } : {}),
+      ...(typeof attributes.discount_total === "number"
+        ? { discountTotal: attributes.discount_total }
+        : {}),
+      ...(typeof attributes.currency === "string" ? { currency: attributes.currency } : {}),
       createdAt: attributes.created_at ? new Date(attributes.created_at) : new Date(),
     };
 

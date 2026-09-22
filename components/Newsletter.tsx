@@ -28,6 +28,7 @@ export default function Newsletter() {
         .json()
         .catch(() => ({}));
 
+      console.log(response);
       if (response.ok) {
         setStatus("success");
         setMessage(data.message ?? "You're in!");

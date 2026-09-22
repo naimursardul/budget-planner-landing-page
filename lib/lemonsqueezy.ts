@@ -59,7 +59,10 @@ export async function createCheckout(plan: PlanId): Promise<string> {
         type: "checkouts",
         attributes: {
           checkout_options: { embed: true, dark: false },
-          checkout_data: { custom: { plan } },
+          checkout_data: {
+            // custom round-trips through the webhook's meta.custom_data.
+            custom: { plan },
+          },
           product_options: {
             redirect_url: `${siteUrl}/?success=true`,
             enabled_variants: [variantId],

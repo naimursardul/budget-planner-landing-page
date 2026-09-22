@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   if (typeof email !== "string" || !isValidEmail(email)) {
     return NextResponse.json(
       { error: "Please enter a valid email address." },
-      { status: 422 }
+      { status: 422 },
     );
   }
 
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     console.error("[newsletter] Failed to save subscriber:", error);
     return NextResponse.json(
       { error: "Something went wrong. Please try again." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

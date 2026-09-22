@@ -12,7 +12,8 @@ const GENERIC_ERROR = "Something went wrong while opening checkout. Please try a
 export async function POST(request: Request) {
   let plan: unknown = null;
   try {
-    plan = (await request.json())?.plan;
+    const body = await request.json();
+    plan = body?.plan;
   } catch {
     // fall through to validation below
   }
