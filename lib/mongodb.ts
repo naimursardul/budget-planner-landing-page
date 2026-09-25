@@ -70,6 +70,7 @@ export async function savePurchase(
     );
     return "skipped";
   }
+
   await Purchase.updateOne(
     { orderId: record.orderId },
     { $set: record },

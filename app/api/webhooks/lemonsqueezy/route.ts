@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { planForVariant, verifyWebhookSignature } from "@/lib/lemonsqueezy";
 import { savePurchase } from "@/lib/mongodb";
 import {
+  lemonsqueezyWebhookSchema,
+  toPurchaseInput,
+} from "@/lib/validation";
+import {
   ORDER_STATUSES,
   type OrderStatus,
   type Plan,
@@ -16,90 +20,48 @@ import {
  * data is ever stored.
  */
 
-type Json = Record<string, unknown>;
-
-function isRecord(value: unknown): value is Json {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-/** Coerce a numeric or string id from the payload to a trimmed string. */
-function toId(value: unknown): string {
-  if (typeof value === "number" && Number.isFinite(value)) return String(value);
-  if (typeof value === "string" && value.trim()) return value.trim();
-  return "";
-}
-
 /**
- * Extract and validate everything a purchase document needs. Returns null
- * when a required field is missing or malformed so the caller can skip the
- * event instead of persisting garbage.
+ * Assemble the final purchase document from the validated webhook fields,
+ * applying the variant→plan mapping and a sensible status fallback. Returns
+ * null when a required identifier is missing so the event is skipped
+ * instead of persisting garbage.
  */
 function buildPurchaseRecord(
-  payload: Json,
-  eventName: string,
+  payload: Parameters<typeof toPurchaseInput>[0],
+  eventId: string,
 ): PurchaseRecord | null {
-  const data = isRecord(payload.data) ? payload.data : null;
-  const attributes = data && isRecord(data.attributes) ? data.attributes : null;
-  if (!data || !attributes) return null;
+  const input = toPurchaseInput(payload, eventId);
 
-  const orderId = toId(attributes.order_id) || toId(data.id);
-  const customerId = toId(attributes.customer_id);
-  const firstItem = isRecord(attributes.first_order_item)
-    ? attributes.first_order_item
-    : {};
-  const variantId = toId(firstItem.variant_id);
-  const email =
-    typeof attributes.user_email === "string"
-      ? attributes.user_email.trim().toLowerCase()
-      : "";
-
-  if (!orderId || !customerId || !variantId || !email) return null;
-
-  const customData =
-    isRecord(payload.meta) && isRecord(payload.meta.custom_data)
-      ? payload.meta.custom_data
-      : {};
+  if (!input.orderId || !input.customerId || !input.variantId || !input.email) {
+    return null;
+  }
 
   // Prefer the variant mapping; fall back to the plan we stamped into the
   // checkout's custom data; otherwise mark it unknown rather than dropping.
-  const plan: Plan =
-    planForVariant(variantId) ??
-    (customData.plan === "lifetime" ? "lifetime" : "unknown");
+  const plan: Plan = planForVariant(input.variantId) ?? input.plan ?? "unknown";
 
-  const rawStatus =
-    typeof attributes.status === "string" ? attributes.status.toLowerCase() : "";
+  const rawStatus = input.status;
   const status: OrderStatus = (ORDER_STATUSES as readonly string[]).includes(
     rawStatus,
   )
     ? (rawStatus as OrderStatus)
-    : eventName === "order_refunded"
+    : rawStatus === "refunded"
       ? "refunded"
       : "unknown";
 
-  const createdAt =
-    typeof attributes.created_at === "string" &&
-    !Number.isNaN(Date.parse(attributes.created_at))
-      ? new Date(attributes.created_at)
-      : new Date();
-
   return {
-    orderId,
-    customerId,
-    email,
-    variantId,
+    orderId: input.orderId,
+    customerId: input.customerId,
+    email: input.email,
+    variantId: input.variantId,
     plan,
     status,
-    ...(typeof attributes.total === "number" && attributes.total >= 0
-      ? { total: attributes.total }
+    ...(input.total !== undefined ? { total: input.total } : {}),
+    ...(input.discountTotal !== undefined
+      ? { discountTotal: input.discountTotal }
       : {}),
-    ...(typeof attributes.discount_total === "number" &&
-    attributes.discount_total >= 0
-      ? { discountTotal: attributes.discount_total }
-      : {}),
-    ...(typeof attributes.currency === "string" && attributes.currency.trim()
-      ? { currency: attributes.currency.trim().toUpperCase() }
-      : {}),
-    createdAt,
+    ...(input.currency ? { currency: input.currency } : {}),
+    createdAt: input.createdAt ?? new Date(),
   };
 }
 
@@ -111,26 +73,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
   }
 
-  let payload: unknown;
+  let json: unknown;
   try {
-    payload = JSON.parse(rawBody);
+    json = JSON.parse(rawBody);
   } catch {
     return NextResponse.json({ error: "Invalid JSON." }, { status: 400 });
   }
 
-  if (!isRecord(payload)) {
+  const payload = lemonsqueezyWebhookSchema.safeParse(json);
+  if (!payload.success) {
+    console.warn(
+      "[webhook] Malformed payload rejected:",
+      payload.error.issues,
+    );
     return NextResponse.json({ error: "Invalid payload." }, { status: 400 });
   }
 
-  const meta = isRecord(payload.meta) ? payload.meta : {};
-  const eventName = typeof meta.event_name === "string" ? meta.event_name : "";
+  const eventName = payload.data.meta?.event_name ?? "";
 
   // Only order events carry data we persist; acknowledge everything else.
   if (eventName !== "order_created" && eventName !== "order_refunded") {
     return NextResponse.json({ received: true });
   }
 
-  const record = buildPurchaseRecord(payload, eventName);
+  const record = buildPurchaseRecord(payload.data, String(payload.data.data.id));
   if (!record) {
     console.warn(
       `[webhook] ${eventName} event missing required fields — skipped.`,
@@ -139,7 +105,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    await savePurchase(record);
+    const result = await savePurchase(record);
+    console.log(
+      `[webhook] ${eventName} order ${record.orderId} (${record.email}): ${result}`,
+    );
   } catch (error) {
     // Log but still acknowledge — Lemon Squeezy retries on non-2xx, and a
     // storage hiccup shouldn't cause a storm of duplicate events.

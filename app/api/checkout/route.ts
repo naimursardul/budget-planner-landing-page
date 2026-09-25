@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { PlanId } from "@/data/product";
 import { createCheckout, isLemonSqueezyConfigured } from "@/lib/lemonsqueezy";
+import { checkoutRequestSchema } from "@/lib/validation";
 
 const GENERIC_ERROR = "Something went wrong while opening checkout. Please try again.";
 
@@ -10,15 +11,15 @@ const GENERIC_ERROR = "Something went wrong while opening checkout. Please try a
  * the browser) and returns { url } for the Lemon.js overlay.
  */
 export async function POST(request: Request) {
-  let plan: unknown = null;
+  let body: unknown = null;
   try {
-    const body = await request.json();
-    plan = body?.plan;
+    body = await request.json();
   } catch {
     // fall through to validation below
   }
 
-  if (plan !== "lifetime") {
+  const parsed = checkoutRequestSchema.safeParse(body);
+  if (!parsed.success) {
     return NextResponse.json({ error: "Invalid plan." }, { status: 400 });
   }
 
@@ -34,8 +35,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Guard above narrowed the JSON value; cast carries the proof to the call.
-    const url = await createCheckout(plan as PlanId);
+    // safeParse above narrowed plan to the literal "lifetime"; this cast is
+    // what carries that proof to createCheckout.
+    const url = await createCheckout(parsed.data.plan as PlanId);
     return NextResponse.json({ url });
   } catch (error) {
     console.error("[checkout] Failed to create checkout:", error);

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { isValidEmail } from "@/lib/utils";
 import { saveSubscriber } from "@/lib/mongodb";
+import { newsletterRequestSchema } from "@/lib/validation";
 
 /**
  * POST /api/newsletter  { email: string }
@@ -8,21 +8,22 @@ import { saveSubscriber } from "@/lib/mongodb";
  * configured). Always responds with a user-friendly message.
  */
 export async function POST(request: Request) {
-  let email: unknown = null;
+  let body: unknown = null;
   try {
-    email = (await request.json())?.email;
+    body = await request.json();
   } catch {
     // fall through to validation below
   }
 
-  if (typeof email !== "string" || !isValidEmail(email)) {
-    return NextResponse.json(
-      { error: "Please enter a valid email address." },
-      { status: 422 },
-    );
+  const parsed = newsletterRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    const message =
+      parsed.error.issues[0]?.message ?? "Please enter a valid email address.";
+    return NextResponse.json({ error: message }, { status: 422 });
   }
 
-  const normalized = email.trim().toLowerCase();
+  // The schema already trims and lowercases the email via transform.
+  const normalized = parsed.data.email;
 
   try {
     const result = await saveSubscriber(normalized);
